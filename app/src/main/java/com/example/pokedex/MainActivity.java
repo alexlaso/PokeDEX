@@ -8,8 +8,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.Toast;
 
+import com.example.pokedex.adapters.AdaptadorListaPokemon;
 import com.example.pokedex.conexionPokeAPI.ServicioPokeAPI;
 import com.example.pokedex.entidades.ListaPokemonAPI;
 
@@ -20,8 +23,10 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
+    //TODO saber como recargar la lista en caliente al activar el switch para ver la lista shiny
 
     private Retrofit conexionRetrofit;
+    private Switch switchShiny;
     Context contexto;
 
     private int offset;
@@ -38,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
         listaPokemon = findViewById(R.id.listaPokemon);
         adaptadorListaPokemon = new AdaptadorListaPokemon(contexto);
         listaPokemon.setAdapter(adaptadorListaPokemon);
+        switchShiny = findViewById(R.id.switchShiny);
+
         final GridLayoutManager layoutManager = new GridLayoutManager(contexto, 2);
         listaPokemon.setLayoutManager(layoutManager);
 
@@ -67,6 +74,17 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         obtenerDatos(0);
+
+        switchShiny.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(switchShiny.isChecked()){
+                    adaptadorListaPokemon.hacerShiny();
+                }else{
+                    adaptadorListaPokemon.hacerNormal();
+                }
+            }
+        });
     }
 
     private void obtenerDatos(int offset){
@@ -98,4 +116,5 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
 }
