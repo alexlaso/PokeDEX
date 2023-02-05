@@ -13,7 +13,7 @@ public interface ServicioPokeAPI {
     @GET("pokemon")
     Call<ListaPokemonAPI> hazteConTodos(@Query ("limit") int limit,@Query("offset") int offset);
 
-    @GET("pokemon/{pokemon}")
-    Call<Pokemon> pokemonPorID(@Path("pokemon") int idPokemon);
+    @GET("pokemon/{id}")
+    Call<Pokemon> pokemonPorID(@Path("id") int idPokemon);
 
 }

@@ -72,6 +72,10 @@ public class AdaptadorListaPokemon extends RecyclerView.Adapter<AdaptadorListaPo
         notifyDataSetChanged();
     }
 
+    public ArrayList<Pokemon> devolverPokemon(){
+        return datosPokemon;
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView nombrePokemon;
         private ImageView spritePokemon;

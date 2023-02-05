@@ -1,9 +1,13 @@
 package com.example.pokedex.entidades;
 
-public class Pokemon {
+import java.io.Serializable;
+import java.util.List;
+
+public class Pokemon implements Serializable {
     private int id;
     private String name;
     private String url;
+    private List<Types> types;
 
     public int getId() {
         String[] partesURL = url.split("/");
@@ -28,5 +32,23 @@ public class Pokemon {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public List<Types> getTypes() {
+        return types;
+    }
+
+    public void setTypes(List<Types> types) {
+        this.types = types;
+    }
+
+    @Override
+    public String toString() {
+        return "Pokemon{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", url='" + url + '\'' +
+                ", types=" + types +
+                '}';
     }
 }

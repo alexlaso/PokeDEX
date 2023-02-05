@@ -6,15 +6,24 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
 import com.example.pokedex.adapters.AdaptadorListaPokemon;
+import com.example.pokedex.adapters.RecyclerTouch;
 import com.example.pokedex.conexionPokeAPI.ServicioPokeAPI;
 import com.example.pokedex.entidades.ListaPokemonAPI;
+import com.example.pokedex.entidades.Pokemon;
+import com.example.pokedex.entidades.Type;
+import com.example.pokedex.entidades.Types;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -68,6 +77,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        listaPokemon.addOnItemTouchListener(new RecyclerTouch(this, listaPokemon, new RecyclerTouch.OnItemClickListener() {
+            @Override
+            public void onItemClick(View v, int posicion) {
+                itemClicked(v,posicion);
+            }
+
+            @Override
+            public void onLongItemClick(View v, int posicion) {
+
+            }
+        }));
+
         conexionRetrofit = new Retrofit.Builder()
                 .baseUrl("https://pokeapi.co/api/v2/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -83,6 +104,34 @@ public class MainActivity extends AppCompatActivity {
                 }else{
                     adaptadorListaPokemon.hacerNormal();
                 }
+            }
+        });
+    }
+
+    private void itemClicked(View v, int position){
+        Intent intent = new Intent(v.getContext(), PokemonDetalle.class);
+        tiposPokemon(adaptadorListaPokemon.devolverPokemon().get(position), intent);
+    }
+
+    private void tiposPokemon(Pokemon pokemon, Intent intent){
+        ServicioPokeAPI servicioPokeAPI = conexionRetrofit.create(ServicioPokeAPI.class);
+        Call<Pokemon> pokemonCall = servicioPokeAPI.pokemonPorID(pokemon.getId());
+
+        pokemonCall.enqueue(new Callback<Pokemon>() {
+            @Override
+            public void onResponse(Call<Pokemon> call, Response<Pokemon> response) {
+                if (response.isSuccessful()){
+                    Pokemon pokemonazo = response.body();
+                    List<Types> types = pokemonazo.getTypes();
+                    pokemon.setTypes(types);
+                    intent.putExtra("pokemon", pokemon);
+                    startActivity(intent);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Pokemon> call, Throwable t) {
+
             }
         });
     }
