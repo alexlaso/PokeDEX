@@ -126,12 +126,15 @@ public class MainActivity extends AppCompatActivity {
                     pokemon.setTypes(types);
                     intent.putExtra("pokemon", pokemon);
                     startActivity(intent);
+                }else{
+                    Toast.makeText(contexto,"Conexion fallida: " + response.toString(),Toast.LENGTH_LONG).show();
+                    Log.e("aplicación","Respuestita: " + response.toString());
                 }
             }
 
             @Override
             public void onFailure(Call<Pokemon> call, Throwable t) {
-
+                System.out.println("ERROR GET TIPOS");
             }
         });
     }

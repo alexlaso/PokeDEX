@@ -1,5 +1,6 @@
 package com.example.pokedex;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -76,7 +77,7 @@ public class PokemonDetalle extends AppCompatActivity {
                 .build();
 
     }
-    public void setNombrePokemon(String nombre){nombrePokemon.setText(nombre);}
+    public void setNombrePokemon(String nombre){nombrePokemon.setText(nombre.toString());}
 
     public void setSpritePokemon(int idPokemon){
         Picasso.with(spritePokemon.getContext()).load("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + idPokemon + ".png")
@@ -100,7 +101,7 @@ public class PokemonDetalle extends AppCompatActivity {
             case "WATER":
                 id = R.drawable.agua;
                 break;
-            case "GRASS":
+            case "GRASS ":
                 id = R.drawable.planta;
                 break;
             case "ROCK":
@@ -151,6 +152,6 @@ public class PokemonDetalle extends AppCompatActivity {
 
     public void setTipo1Imagen(String tipo1){tipo1Imagen.setImageDrawable(getResources().getDrawable(returnIDTypes(tipo1)));}
 
-    public void setTipo2Imagen(String tipo2){tipo1Imagen.setImageDrawable(getResources().getDrawable(returnIDTypes(tipo2)));}
+    public void setTipo2Imagen(String tipo2){tipo2Imagen.setImageDrawable(getResources().getDrawable(returnIDTypes(tipo2)));}
 }
 
