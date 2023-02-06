@@ -45,20 +45,22 @@ public class AdaptadorListaPokemon extends RecyclerView.Adapter<AdaptadorListaPo
 
     public void hacerShiny(){
         listaShiny = true;
+        notifyDataSetChanged();
     }
 
     public void hacerNormal(){
         listaShiny = false;
+        notifyDataSetChanged();
     }
 
     public void listaNormal(@NonNull ViewHolder holder, int position){
         Pokemon pokemon = datosPokemon.get(position);
-        holder.setNombrePokemon(pokemon.getName());
+        holder.setNombrePokemon(pokemon.getName().toUpperCase());
         holder.setSpritePokemon(pokemon.getId());
     }
     public void cambiarShiny(@NonNull ViewHolder holder, int position){
         Pokemon pokemon = datosPokemon.get(position);
-        holder.setNombrePokemon(pokemon.getName());
+        holder.setNombrePokemon(pokemon.getName().toUpperCase());
         holder.setSpritePokemonShiny(pokemon.getId());
     }
 

@@ -1,6 +1,6 @@
 package com.example.pokedex;
 
-import android.annotation.SuppressLint;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,11 +22,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class PokemonDetalle extends AppCompatActivity {
     private Pokemon pokemon;
-    private String tipo1 = "null";
     private Retrofit conexionRetrofit;
     Context context;
     private ImageView spritePokemon, tipo1Imagen, tipo2Imagen;
-    private TextView nombrePokemon, hab1, hab2, habOc;
+    private TextView nombrePokemon, hab1, hab2, habOc, hab1Nombre, hab2Nombre, habOcNombre;
     private Switch switchShinyDetalle;
 
     @Override
@@ -48,6 +47,9 @@ public class PokemonDetalle extends AppCompatActivity {
         hab1 = findViewById(R.id.textHab1);
         hab2 = findViewById(R.id.textHab2);
         habOc = findViewById(R.id.textHabOc);
+        hab1Nombre = findViewById(R.id.textHab1Nombre);
+        hab2Nombre = findViewById(R.id.textHab2Nombre);
+        habOcNombre = findViewById(R.id.textHabOcNombre);
 
         switchShinyDetalle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -70,14 +72,29 @@ public class PokemonDetalle extends AppCompatActivity {
             tipo2Imagen.setVisibility(View.GONE);
         }
 
+        hab1.setText(pokemon.getAbilities().get(0).getAbility().getName().toUpperCase());
+        hab1Nombre.setText("HABILIDAD 1");
+        if(pokemon.getAbilities().size()<=2){
+            hab2.setVisibility(View.GONE);
+            hab2Nombre.setVisibility(View.GONE);
+            habOc.setText(pokemon.getAbilities().get(1).getAbility().getName().toUpperCase());
+            habOcNombre.setText("HABILIDAD OC");
+        }else if(pokemon.getAbilities().size()>2){
+            hab2.setText(pokemon.getAbilities().get(1).getAbility().getName().toUpperCase());
+            hab2Nombre.setText("HABILIDAD 2");
+            habOc.setText(pokemon.getAbilities().get(2).getAbility().getName().toUpperCase());
+            habOcNombre.setText("HABILIDAD OC");
+        }
+
+
         conexionRetrofit = new Retrofit.Builder()
                 .callbackExecutor(Executors.newSingleThreadExecutor())
-                .baseUrl("https://pokeapi.co/api/v2")
+                .baseUrl("https://pokeapi.co/api/v2/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
     }
-    public void setNombrePokemon(String nombre){nombrePokemon.setText(nombre.toString());}
+    public void setNombrePokemon(String nombre){nombrePokemon.setText(nombre.toString().toUpperCase());}
 
     public void setSpritePokemon(int idPokemon){
         Picasso.with(spritePokemon.getContext()).load("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + idPokemon + ".png")
@@ -91,7 +108,7 @@ public class PokemonDetalle extends AppCompatActivity {
 
     public int returnIDTypes(String type){
         int id=0;
-        switch(type){
+        switch(type.toUpperCase()){
             case "NORMAL":
                 id = R.drawable.normal;
                 break;
@@ -101,7 +118,7 @@ public class PokemonDetalle extends AppCompatActivity {
             case "WATER":
                 id = R.drawable.agua;
                 break;
-            case "GRASS ":
+            case "GRASS":
                 id = R.drawable.planta;
                 break;
             case "ROCK":

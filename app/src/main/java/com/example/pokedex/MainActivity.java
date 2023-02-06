@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.example.pokedex.adapters.AdaptadorListaPokemon;
 import com.example.pokedex.adapters.RecyclerTouch;
 import com.example.pokedex.conexionPokeAPI.ServicioPokeAPI;
+import com.example.pokedex.entidades.Abilities;
 import com.example.pokedex.entidades.ListaPokemonAPI;
 import com.example.pokedex.entidades.Pokemon;
 import com.example.pokedex.entidades.Type;
@@ -32,7 +33,9 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
-    //TODO saber como recargar la lista en caliente al activar el switch para ver la lista shiny
+    /*TODO v2:  Cambiar devolución de habilidades a español.
+                Añadir lista de movimientos ordenados por nivel y añadir categoría de ataque (especial, físico y de estado).
+     */
 
     private Retrofit conexionRetrofit;
     private Switch switchShiny;
@@ -101,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if(switchShiny.isChecked()){
                     adaptadorListaPokemon.hacerShiny();
+                    onRestart();
                 }else{
                     adaptadorListaPokemon.hacerNormal();
                 }
@@ -110,10 +114,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void itemClicked(View v, int position){
         Intent intent = new Intent(v.getContext(), PokemonDetalle.class);
-        tiposPokemon(adaptadorListaPokemon.devolverPokemon().get(position), intent);
+        datosPokemon(adaptadorListaPokemon.devolverPokemon().get(position), intent);
     }
 
-    private void tiposPokemon(Pokemon pokemon, Intent intent){
+    private void datosPokemon(Pokemon pokemon, Intent intent){
         ServicioPokeAPI servicioPokeAPI = conexionRetrofit.create(ServicioPokeAPI.class);
         Call<Pokemon> pokemonCall = servicioPokeAPI.pokemonPorID(pokemon.getId());
 
@@ -123,7 +127,9 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful()){
                     Pokemon pokemonazo = response.body();
                     List<Types> types = pokemonazo.getTypes();
+                    List<Abilities> abilities = pokemonazo.getAbilities();
                     pokemon.setTypes(types);
+                    pokemon.setAbilities(abilities);
                     intent.putExtra("pokemon", pokemon);
                     startActivity(intent);
                 }else{

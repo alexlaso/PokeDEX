@@ -8,6 +8,7 @@ public class Pokemon implements Serializable {
     private String name;
     private String url;
     private List<Types> types;
+    private List<Abilities> abilities;
 
     public int getId() {
         String[] partesURL = url.split("/");
@@ -42,6 +43,14 @@ public class Pokemon implements Serializable {
         this.types = types;
     }
 
+    public List<Abilities> getAbilities() {
+        return abilities;
+    }
+
+    public void setAbilities(List<Abilities> abilities) {
+        this.abilities = abilities;
+    }
+
     @Override
     public String toString() {
         return "Pokemon{" +
@@ -49,6 +58,7 @@ public class Pokemon implements Serializable {
                 ", name='" + name + '\'' +
                 ", url='" + url + '\'' +
                 ", types=" + types +
+                ", abilities=" + abilities +
                 '}';
     }
 }
