@@ -16,9 +16,11 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import com.example.pokedex.adapters.AdaptadorListaPokemon;
+import com.example.pokedex.adapters.AdapterListaHabilidades;
 import com.example.pokedex.adapters.RecyclerTouch;
 import com.example.pokedex.conexionPokeAPI.ServicioPokeAPI;
 import com.example.pokedex.entidades.Abilities;
+import com.example.pokedex.entidades.ListaHabilidadesAPI;
 import com.example.pokedex.entidades.ListaPokemonAPI;
 import com.example.pokedex.entidades.Pokemon;
 import com.example.pokedex.entidades.Type;
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView listaPokemon;
     private AdaptadorListaPokemon adaptadorListaPokemon;
+    private AdapterListaHabilidades adapterListaHabilidades;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
         listaPokemon = findViewById(R.id.listaPokemon);
         adaptadorListaPokemon = new AdaptadorListaPokemon(contexto);
+        adapterListaHabilidades = new AdapterListaHabilidades(contexto);
         listaPokemon.setAdapter(adaptadorListaPokemon);
         switchShiny = findViewById(R.id.switchShiny);
 
@@ -98,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         obtenerDatos(0);
+        obtenerHabilidades();
 
         switchShiny.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -170,6 +175,28 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ListaPokemonAPI> call, Throwable t) {
+                Log.e("aplicacion", "Fallito: "+t.getMessage());
+            }
+        });
+    }
+
+    public void obtenerHabilidades(){
+        ServicioPokeAPI service = conexionRetrofit.create(ServicioPokeAPI.class);
+        Call<ListaHabilidadesAPI> habilidadesAPICall = service.habilidadTotal(298);
+
+        habilidadesAPICall.enqueue(new Callback<ListaHabilidadesAPI>() {
+            @Override
+            public void onResponse(Call<ListaHabilidadesAPI> call, Response<ListaHabilidadesAPI> response) {
+                if (response.isSuccessful()){
+                    ListaHabilidadesAPI listaHabilidadesAPI = response.body();
+                    adapterListaHabilidades.agregarListaHabilidades(listaHabilidadesAPI.getResults());
+                }else{
+                    Toast.makeText(contexto,"Error obteniendo habilidades", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ListaHabilidadesAPI> call, Throwable t) {
                 Log.e("aplicacion", "Fallito: "+t.getMessage());
             }
         });

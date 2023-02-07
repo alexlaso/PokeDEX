@@ -4,19 +4,31 @@ package com.example.pokedex;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.pokedex.conexionPokeAPI.ServicioPokeAPI;
+import com.example.pokedex.entidades.Abilities;
+import com.example.pokedex.entidades.Habilidad;
 import com.example.pokedex.entidades.Pokemon;
+import com.example.pokedex.entidades.Types;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -27,13 +39,25 @@ public class PokemonDetalle extends AppCompatActivity {
     private ImageView spritePokemon, tipo1Imagen, tipo2Imagen;
     private TextView nombrePokemon, hab1, hab2, habOc, hab1Nombre, hab2Nombre, habOcNombre;
     private Switch switchShinyDetalle;
+    private ArrayList<Integer> listaIdHabilidades;
+    private ArrayList<Habilidad> listaHabilidades;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+
+        conexionRetrofit = new Retrofit.Builder()
+                .callbackExecutor(Executors.newSingleThreadExecutor())
+                .baseUrl("https://pokeapi.co/api/v2/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
         context = this;
         setContentView(R.layout.pokemon_detalle);
         Intent intent = getIntent();
+
+        listaIdHabilidades = new ArrayList<>();
+        listaHabilidades = new ArrayList<>();
 
         pokemon = (Pokemon) intent.getSerializableExtra("pokemon");
 
@@ -50,6 +74,9 @@ public class PokemonDetalle extends AppCompatActivity {
         hab1Nombre = findViewById(R.id.textHab1Nombre);
         hab2Nombre = findViewById(R.id.textHab2Nombre);
         habOcNombre = findViewById(R.id.textHabOcNombre);
+        for (int i=0; i<pokemon.getAbilities().size();i++){
+            listaIdHabilidades.add(pokemon.getAbilities().get(i).getAbility().getId());
+        }
 
         switchShinyDetalle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -62,6 +89,43 @@ public class PokemonDetalle extends AppCompatActivity {
             }
         });
 
+        //listaDatosHabilidades(listaIdHabilidades);
+
+        ServicioPokeAPI servicioPokeAPI = conexionRetrofit.create(ServicioPokeAPI.class);
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        for(int i=0;i<listaIdHabilidades.size();i++){
+            Call<Habilidad> habilidadCall = servicioPokeAPI.habilidadPorId(listaIdHabilidades.get(i));
+            habilidadCall.enqueue(new Callback<Habilidad>() {
+                @Override
+                public void onResponse(Call<Habilidad> call, Response<Habilidad> response) {
+                    if (response.isSuccessful()){
+                        Habilidad habilidad = response.body();
+                        listaHabilidades.add(habilidad);
+                        System.out.println("Lista: "+listaHabilidades.toString());
+                    }else{
+                        Toast.makeText(context,"Conexion fallida: " + response.toString(),Toast.LENGTH_LONG).show();
+                        Log.e("aplicación","Respuestita: " + response.toString());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Habilidad> call, Throwable t) {
+                    System.out.println("ERROR GET HABILIDADES");
+                    Log.e("aplicación","Error: "+t.getMessage().toString());
+                }
+            });
+        }
+        countDownLatch.countDown();
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("PostLista: "+listaHabilidades.toString());
+
+        setHabilidadesPokemon(listaHabilidades);
+
+        System.out.println("PRUEBA: "+listaHabilidades.toString());
         setNombrePokemon(pokemon.getName());
         setSpritePokemon(pokemon.getId());
         setTipo1Imagen(pokemon.getTypes().get(0).getType().getName());
@@ -72,28 +136,16 @@ public class PokemonDetalle extends AppCompatActivity {
             tipo2Imagen.setVisibility(View.GONE);
         }
 
-        hab1.setText(pokemon.getAbilities().get(0).getAbility().getName().toUpperCase());
-        hab1Nombre.setText("HABILIDAD 1");
-        if(pokemon.getAbilities().size()<=2){
-            hab2.setVisibility(View.GONE);
-            hab2Nombre.setVisibility(View.GONE);
-            habOc.setText(pokemon.getAbilities().get(1).getAbility().getName().toUpperCase());
-            habOcNombre.setText("HABILIDAD OC");
-        }else if(pokemon.getAbilities().size()>2){
-            hab2.setText(pokemon.getAbilities().get(1).getAbility().getName().toUpperCase());
-            hab2Nombre.setText("HABILIDAD 2");
-            habOc.setText(pokemon.getAbilities().get(2).getAbility().getName().toUpperCase());
-            habOcNombre.setText("HABILIDAD OC");
-        }
-
-
-        conexionRetrofit = new Retrofit.Builder()
-                .callbackExecutor(Executors.newSingleThreadExecutor())
-                .baseUrl("https://pokeapi.co/api/v2/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
+        System.out.println("LISTA: "+listaHabilidades.toString());
+        System.out.println("FINAL: "+listaHabilidades.toString());
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        listaHabilidades.clear();
+    }
+
     public void setNombrePokemon(String nombre){nombrePokemon.setText(nombre.toString().toUpperCase());}
 
     public void setSpritePokemon(int idPokemon){
@@ -170,5 +222,47 @@ public class PokemonDetalle extends AppCompatActivity {
     public void setTipo1Imagen(String tipo1){tipo1Imagen.setImageDrawable(getResources().getDrawable(returnIDTypes(tipo1)));}
 
     public void setTipo2Imagen(String tipo2){tipo2Imagen.setImageDrawable(getResources().getDrawable(returnIDTypes(tipo2)));}
+
+    /*public void listaDatosHabilidades(ArrayList<Integer> listaIdHabilidades){
+        ServicioPokeAPI servicioPokeAPI = conexionRetrofit.create(ServicioPokeAPI.class);
+        for(int i=0;i<listaIdHabilidades.size();i++){
+            Call<Habilidad> habilidadCall = servicioPokeAPI.habilidadPorId(listaIdHabilidades.get(i));
+            habilidadCall.enqueue(new Callback<Habilidad>() {
+                @Override
+                public void onResponse(Call<Habilidad> call, Response<Habilidad> response) {
+                    if (response.isSuccessful()){
+                        Habilidad habilidad = response.body();
+                        listaHabilidades.add(habilidad);
+                        setHabilidadesPokemon();
+                    }else{
+                        Toast.makeText(context,"Conexion fallida: " + response.toString(),Toast.LENGTH_LONG).show();
+                        Log.e("aplicación","Respuestita: " + response.toString());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Habilidad> call, Throwable t) {
+                    System.out.println("ERROR GET HABILIDADES");
+                    Log.e("aplicación","Error: "+t.getMessage().toString());
+                }
+            });
+        }*/
+
+
+    public void setHabilidadesPokemon(ArrayList<Habilidad> listaHabilidades){
+        hab1.setText(listaHabilidades.get(0).getNames().get(5).getName().toUpperCase());
+        hab1Nombre.setText("HABILIDAD 1");
+        if(pokemon.getAbilities().size()<=2){
+            hab2.setVisibility(View.GONE);
+            hab2Nombre.setVisibility(View.GONE);
+            //habOc.setText(listaHabilidades.get(1).getNames().get(5).getName().toUpperCase());
+            habOcNombre.setText("HABILIDAD OC");
+        }else if(pokemon.getAbilities().size()>2) {
+            //hab2.setText(listaHabilidades.get(1).getNames().get(5).getName().toUpperCase());
+            hab2Nombre.setText("HABILIDAD 2");
+            //habOc.setText(listaHabilidades.get(2).getNames().get(5).getName().toUpperCase());
+            habOcNombre.setText("HABILIDAD OC");
+        }
+    }
 }
 
